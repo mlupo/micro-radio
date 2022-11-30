@@ -1,5 +1,5 @@
 # micro-radio
-A microcontroller radio project using the Adafruit PyBadge
+A microcontroller radio project using the Adafruit PyBadge and CircuitPython
 
 ![](/media/version1.jpeg)
 **in progress print**
