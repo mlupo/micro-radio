@@ -2,7 +2,7 @@
 A microcontroller radio project using the Adafruit PyBadge and CircuitPython
 
 ![](/media/version2.png)
-**in progress print**
+
 
 Using the [Adafruit Pybadge](https://www.adafruit.com/product/4200) along with an [Adalogger FeatherWing](https://www.adafruit.com/product/2922), the PyBadge plays a song from an sdcard with a simple button press.
 
