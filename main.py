@@ -1,15 +1,18 @@
-from time import monotonic  # ,sleep
-from board import BUTTON_LATCH, BUTTON_CLOCK, BUTTON_OUT, D10, SPI, SPEAKER_ENABLE, DISPLAY
+from time import monotonic
+from board import BUTTON_LATCH, BUTTON_CLOCK, BUTTON_OUT, D8, D10, SPI, SPEAKER_ENABLE, DISPLAY
 from sdcardio import SDCard
 from storage import mount, VfsFat
 # from gc import collect
-import badgey
+from neopixel import NeoPixel
 from keypad import ShiftRegisterKeys, Event
 from alarm import time, exit_and_deep_sleep_until_alarms
 from digitalio import DigitalInOut
+import badgey
 from os import chdir
 
 DISPLAY.brightness = 0  # turn off display
+
+status = NeoPixel(D8, 1, brightness=0.8, auto_write=True)
 
 # initialize sdcard, and mount it
 cs = D10
@@ -46,12 +49,12 @@ pad = ShiftRegisterKeys(clock=BUTTON_CLOCK,
 latest_event = None
 
 # lists holding the song file name, each item will correspond to a specific btn
-track_bank = [["shake_sillies.wav", "happy_and.wav", "wheels_raffi.wav"],  # up
+track_bank = [["wheels_raffi.wav", "shake_sillies.wav", "happy_and.wav"],  # up
               ["sunflower.wav", "wonderwall.wav"],  # down
-              ["rocks_and_flowers.wav", "old_cookie.wav"],  # left
-              ["moonshadow.wav", "tiger.wav", "either.wav"],  # right
-              ["deck_halls.wav", "candy_cane.wav", "winter_party.wav",
-              "joy_world.wav"]]  # select
+              ["spider_j.wav", "rocks_and_flowers.wav", "old_cookie.wav"],  # left
+              ["daydream.wav", "moonshadow.wav", "tiger.wav", "either.wav"],  # right
+              ["trim.wav", "deck_halls.wav", "winter_party.wav",
+              "joy_world.wav", "candle_snow.wav", "grinch.wav"]]  # select
 
 # enable the speaker and initialize the SoundManager
 speakerEnable = DigitalInOut(SPEAKER_ENABLE)
@@ -62,6 +65,7 @@ radio.sound.level = 0.08
 radio.wake_time = monotonic()
 last_read = 0
 
+status.fill((255, 50, 50))
 while True:
     # checks if button has been pressed
     latest_event = pad.events.get()
