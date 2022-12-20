@@ -5,7 +5,7 @@ from board import A0
 from time import monotonic
 
 
-def OmniInc(current_val, change, min=0.02, max=0.3):
+def OmniInc(current_val, change, min=0.02, max=0.4):
     """helper function to inc/decrement things. Was originally used for
     volume and brightness"""
     current = current_val

@@ -13,6 +13,7 @@ from os import chdir
 DISPLAY.brightness = 0  # turn off display
 
 status = NeoPixel(D8, 1, brightness=0.8, auto_write=True)
+status.fill((255, 50, 50))
 
 # initialize sdcard, and mount it
 cs = D10
@@ -65,7 +66,6 @@ radio.sound.level = 0.08
 radio.wake_time = monotonic()
 last_read = 0
 
-status.fill((255, 50, 50))
 while True:
     # checks if button has been pressed
     latest_event = pad.events.get()
