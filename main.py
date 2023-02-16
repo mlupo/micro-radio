@@ -1,19 +1,19 @@
+from neopixel import NeoPixel
+from board import D8, BUTTON_LATCH, BUTTON_CLOCK, BUTTON_OUT, D10, SPI, SPEAKER_ENABLE, DISPLAY
 from time import monotonic
-from board import BUTTON_LATCH, BUTTON_CLOCK, BUTTON_OUT, D8, D10, SPI, SPEAKER_ENABLE, DISPLAY
 from sdcardio import SDCard
 from storage import mount, VfsFat
 # from gc import collect
-from neopixel import NeoPixel
 from keypad import ShiftRegisterKeys, Event
 from alarm import time, exit_and_deep_sleep_until_alarms
 from digitalio import DigitalInOut
-import badgey
 from os import chdir
-
-DISPLAY.brightness = 0  # turn off display
+import badgey
 
 status = NeoPixel(D8, 1, brightness=0.8, auto_write=True)
 status.fill((255, 50, 50))
+
+DISPLAY.brightness = 0  # turn off display
 
 # initialize sdcard, and mount it
 cs = D10
@@ -51,11 +51,13 @@ latest_event = None
 
 # lists holding the song file name, each item will correspond to a specific btn
 track_bank = [["wheels_raffi.wav", "shake_sillies.wav", "happy_and.wav"],  # up
-              ["sunflower.wav", "wonderwall.wav"],  # down
-              ["spider_j.wav", "rocks_and_flowers.wav", "old_cookie.wav"],  # left
-              ["daydream.wav", "moonshadow.wav", "tiger.wav", "either.wav"],  # right
-              ["trim.wav", "deck_halls.wav", "winter_party.wav",
-              "joy_world.wav", "candle_snow.wav", "grinch.wav"]]  # select
+              ["should_i_stay.wav", "mr_sandman.wav"],  # down
+              ["spider_j.wav", "rocks_and_flowers.wav",
+              "old_cookie.wav"],  # left
+              ["daydream.wav", "moonshadow.wav", "either.wav"],  # right
+              ["trim.wav", "deck_halls.wav",
+               "joy_world.wav", "candle_snow.wav",
+               "snowy_blanket.wav", "grinch.wav"]]  # select
 
 # enable the speaker and initialize the SoundManager
 speakerEnable = DigitalInOut(SPEAKER_ENABLE)
