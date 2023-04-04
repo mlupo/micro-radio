@@ -35,10 +35,10 @@ B_PRESS = Event(0, True)
 
 # this dictionary stores strings corresponding to the method names in badgey.py
 # later, these strings will be used to call the methods using getattr()
-press_events = {LEFT_PRESS: "on_LEFT_PRESS", UP_PRESS: "on_UP_PRESS",
-                DOWN_PRESS: "on_DOWN_PRESS", RIGHT_PRESS: "on_RIGHT_PRESS",
-                SEL_PRESS: "on_SEL_PRESS", START_PRESS: "on_START_PRESS",
-                A_PRESS: "on_A_PRESS", B_PRESS: "on_B_PRESS"}
+press_events = {LEFT_PRESS: badgey.on_LEFT_PRESS, UP_PRESS: badgey.on_UP_PRESS,
+                DOWN_PRESS: badgey.on_DOWN_PRESS, RIGHT_PRESS: badgey.on_RIGHT_PRESS,
+                SEL_PRESS: badgey.on_SEL_PRESS, START_PRESS: badgey.on_START_PRESS,
+                A_PRESS: badgey.on_A_PRESS, B_PRESS: badgey.on_B_PRESS}
 
 # initialize the keypad
 pad = ShiftRegisterKeys(clock=BUTTON_CLOCK,
@@ -93,5 +93,6 @@ while True:
     # if/else statements, and makes it more similar to assigning a callback
     event_value = press_events.get(latest_event, "none_event")
     if event_value != "none_event":
-        run_event = getattr(radio, event_value)
+        run_event = event_value
+        # run_event = getattr(radio, event_value)
         run_event()
