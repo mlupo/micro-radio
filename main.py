@@ -10,8 +10,9 @@ from digitalio import DigitalInOut
 from os import chdir
 import badgey
 
-status = NeoPixel(D8, 1, brightness=0.8, auto_write=True)
-status.fill((255, 50, 50))
+status = NeoPixel(D8, 1, brightness=0.7, auto_write=True)
+status.fill((250, 50, 50))
+mode_fill = {True: (255, 50, 50), False: (50, 50, 250)}
 
 DISPLAY.brightness = 0  # turn off display
 
@@ -50,14 +51,14 @@ pad = ShiftRegisterKeys(clock=BUTTON_CLOCK,
 latest_event = None
 
 # lists holding the song file name, each item will correspond to a specific btn
-track_bank = [["wheels_raffi.wav", "shake_sillies.wav", "happy_and.wav"],  # up
-              ["should_i_stay.wav", "mr_sandman.wav"],  # down
-              ["spider_j.wav", "rocks_and_flowers.wav",
-              "old_cookie.wav"],  # left
-              ["daydream.wav", "moonshadow.wav", "either.wav"],  # right
-              ["trim.wav", "deck_halls.wav",
-               "joy_world.wav", "candle_snow.wav",
-               "snowy_blanket.wav", "grinch.wav"]]  # select
+track_bank = [["trim.wav", "candle_snow.wav",
+              "snowy_blanket.wav", "grinch.wav"],  # up
+              ["daydream.wav", "moonshadow.wav", "either.wav"],  # down
+              ["spider_j.wav", "rocks_and_flowers.wav", "old_cookie.wav",
+              "jelly_fish.wav"],  # left
+              ["wheels_raffi.wav", "shake_sillies.wav",
+              "happy_and.wav"],  # right
+              ]
 
 # enable the speaker and initialize the SoundManager
 speakerEnable = DigitalInOut(SPEAKER_ENABLE)
@@ -67,6 +68,7 @@ radio.sound.level = 0.08
 
 radio.wake_time = monotonic()
 last_read = 0
+play_count = 0
 
 while True:
     # checks if button has been pressed
@@ -78,10 +80,15 @@ while True:
         wake = time.TimeAlarm(monotonic_time=(monotonic() + 1728000))
         exit_and_deep_sleep_until_alarms(wake)
 
-    if (last_read - radio.wake_time) > 30:
+    if (last_read - radio.wake_time) > 5:
         # turn off speaker, if there is no sound playing
+        status.fill(mode_fill.get(radio.repeat))
         if not radio.sound.playing:
-            radio.speaker.switch_to_output(value=False)
+            if radio.playable and play_count <= 5:
+                radio.play_based_on_mode()
+                play_count += 1
+            else:
+                radio.speaker.switch_to_output(value=False)
         elif radio.sound.playing:
             radio.wake_time = monotonic()
 
