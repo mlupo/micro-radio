@@ -54,8 +54,8 @@ latest_event = None
 track_bank = [["trim.wav", "candle_snow.wav",
               "snowy_blanket.wav", "grinch.wav"],  # up
               ["daydream.wav", "moonshadow.wav", "either.wav"],  # down
-              ["spider_j.wav", "rocks_and_flowers.wav", "old_cookie.wav",
-              "jelly_fish.wav"],  # left
+              ["spider_j.wav", "rocks_and_flowers.wav", "old_cookie.wav",],
+              # "jelly_fish.wav"],  # left
               ["wheels_raffi.wav", "shake_sillies.wav",
               "happy_and.wav"],  # right
               ]
@@ -68,7 +68,6 @@ radio.sound.level = 0.08
 
 radio.wake_time = monotonic()
 last_read = 0
-play_count = 0
 
 while True:
     # checks if button has been pressed
@@ -82,11 +81,9 @@ while True:
 
     if (last_read - radio.wake_time) > 5:
         # turn off speaker, if there is no sound playing
-        status.fill(mode_fill.get(radio.repeat))
         if not radio.sound.playing:
-            if radio.playable and play_count <= 5:
+            if radio.playable and radio.play_count <= 15:
                 radio.play_based_on_mode()
-                play_count += 1
             else:
                 radio.speaker.switch_to_output(value=False)
         elif radio.sound.playing:
@@ -102,4 +99,5 @@ while True:
     if event_value != "none_event":
         run_event = event_value
         # run_event = getattr(radio, event_value)
+        status.fill(mode_fill.get(radio.repeat))
         run_event()

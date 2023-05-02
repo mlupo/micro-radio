@@ -32,6 +32,7 @@ class SoundManager:
         self.speaker = speaker
         self.repeat = False
         self.playable = False
+        self.play_count = 0
 
         # the 'tracks' list of lists is iterated through to turn everything
         # into WaveFile objects. Requires CircuitPython 8.0
@@ -44,6 +45,7 @@ class SoundManager:
         self.current_bank = 0
 
     def play_from_bank(self, event_bank):
+        self.play_count += 1
         """helper function to grab file from a bank, then rotate the tracks"""
         self.speaker.switch_to_output(value=True)
         self.current_song = self.internal_track_banks[event_bank][0]
@@ -53,29 +55,34 @@ class SoundManager:
 
     def play_based_on_mode(self):
         if self.repeat:
+            self.play_count += 1
             self.on_START_PRESS()
         else:
             self.play_from_bank(self.current_bank)
 
     def on_UP_PRESS(self):
+        self.play_count = 0
         self.play_from_bank(0)
         self.wake_time = monotonic()
         self.current_bank = 0
         self.playable = True
 
     def on_DOWN_PRESS(self):
+        self.play_count = 0
         self.play_from_bank(1)
         self.wake_time = monotonic()
         self.current_bank = 1
         self.playable = True
 
     def on_LEFT_PRESS(self):
+        self.play_count = 0
         self.play_from_bank(2)
         self.wake_time = monotonic()
         self.current_bank = 2
         self.playable = True
 
     def on_RIGHT_PRESS(self):
+        self.play_count = 0
         self.play_from_bank(3)
         self.wake_time = monotonic()
         self.current_bank = 3
@@ -85,6 +92,7 @@ class SoundManager:
         self.repeat = not self.repeat
 
     def on_START_PRESS(self):
+        self.play_count = 0
         self.wake_time = monotonic()
         if not self.sound.playing and self.current_song is not None:
             self.speaker.switch_to_output(value=True)
