@@ -3,18 +3,17 @@ from board import D8, BUTTON_LATCH, BUTTON_CLOCK, BUTTON_OUT, D10, SPI, SPEAKER_
 from time import monotonic
 from sdcardio import SDCard
 from storage import mount, VfsFat
-# from gc import collect
 from keypad import ShiftRegisterKeys, Event
 from alarm import time, exit_and_deep_sleep_until_alarms
 from digitalio import DigitalInOut
 from os import chdir
 import badgey
 
-status = NeoPixel(D8, 1, brightness=0.7, auto_write=True)
-status.fill((250, 50, 50))
-mode_fill = {True: (255, 50, 50), False: (50, 50, 250)}
+status = NeoPixel(D8, 1, brightness=0.75, auto_write=True)
+mode_fill = {True: (255, 40, 50), False: (50, 50, 255)}
+status.fill(mode_fill[False])
 
-DISPLAY.brightness = 0  # turn off display
+DISPLAY.brightness = 0  # turn off display, because it does not exist
 
 # initialize sdcard, and mount it
 cs = D10
@@ -34,12 +33,26 @@ START_PRESS = Event(2, True)
 A_PRESS = Event(1, True)
 B_PRESS = Event(0, True)
 
+# lists holding the song file name, each item will correspond to a specific btn
+track_bank = [["trim.wav", "candle_snow.wav",
+              "snowy_blanket.wav", "grinch.wav"],  # up
+              ["daydream.wav", "moonshadow.wav", "either.wav"],  # down
+              ["more_moles.wav","spider_j.wav", "rocks_and_flowers.wav", "old_cookie.wav",],
+              # "jelly_fish.wav"],  # left
+              ["wheels_raffi.wav", "shake_sillies.wav", "happy_and.wav"],
+              ]  # right
+
+# enable the speaker and initialize the SoundManager
+speakerEnable = DigitalInOut(SPEAKER_ENABLE)
+# SoundManager requires speaker object, and a list of track lists
+radio = badgey.SoundManager(speakerEnable, track_bank)
+
 # this dictionary stores strings corresponding to the method names in badgey.py
 # later, these strings will be used to call the methods using getattr()
-press_events = {LEFT_PRESS: badgey.on_LEFT_PRESS, UP_PRESS: badgey.on_UP_PRESS,
-                DOWN_PRESS: badgey.on_DOWN_PRESS, RIGHT_PRESS: badgey.on_RIGHT_PRESS,
-                SEL_PRESS: badgey.on_SEL_PRESS, START_PRESS: badgey.on_START_PRESS,
-                A_PRESS: badgey.on_A_PRESS, B_PRESS: badgey.on_B_PRESS}
+press_events = {LEFT_PRESS: radio.on_LEFT_PRESS, UP_PRESS: radio.on_UP_PRESS,
+                DOWN_PRESS: radio.on_DOWN_PRESS, RIGHT_PRESS: radio.on_RIGHT_PRESS,
+                SEL_PRESS: radio.on_SEL_PRESS, START_PRESS: radio.on_START_PRESS,
+                A_PRESS: radio.on_A_PRESS, B_PRESS: radio.on_B_PRESS}
 
 # initialize the keypad
 pad = ShiftRegisterKeys(clock=BUTTON_CLOCK,
@@ -48,56 +61,32 @@ pad = ShiftRegisterKeys(clock=BUTTON_CLOCK,
                         key_count=8,
                         value_when_pressed=True,
                         max_events=1)
-latest_event = None
 
-# lists holding the song file name, each item will correspond to a specific btn
-track_bank = [["trim.wav", "candle_snow.wav",
-              "snowy_blanket.wav", "grinch.wav"],  # up
-              ["daydream.wav", "moonshadow.wav", "either.wav"],  # down
-              ["spider_j.wav", "rocks_and_flowers.wav", "old_cookie.wav",],
-              # "jelly_fish.wav"],  # left
-              ["wheels_raffi.wav", "shake_sillies.wav",
-              "happy_and.wav"],  # right
-              ]
-
-# enable the speaker and initialize the SoundManager
-speakerEnable = DigitalInOut(SPEAKER_ENABLE)
-# SoundManager requires speaker object, and a list of track lists
-radio = badgey.SoundManager(speakerEnable, track_bank)
 radio.sound.level = 0.08
 
-radio.wake_time = monotonic()
-last_read = 0
-
+wake_time = monotonic()
+last_play = monotonic()
 while True:
     # checks if button has been pressed
     latest_event = pad.events.get()
-    last_read = monotonic()
 
-    if (last_read - radio.wake_time) > 540:
-        # no matter what, sleep device after 9 minutes of inactivity
-        wake = time.TimeAlarm(monotonic_time=(monotonic() + 1728000))
+    if (monotonic() - wake_time > 1200) or (monotonic() - last_play > 300):
+        # sleep after 5 minutes of inactivity of 20 minutes, no matter what
+        wake = time.TimeAlarm(monotonic_time=(monotonic() + 1928000))
         exit_and_deep_sleep_until_alarms(wake)
 
-    if (last_read - radio.wake_time) > 5:
-        # turn off speaker, if there is no sound playing
-        if not radio.sound.playing:
-            if radio.playable and radio.play_count <= 15:
-                radio.play_based_on_mode()
-            else:
-                radio.speaker.switch_to_output(value=False)
-        elif radio.sound.playing:
-            radio.wake_time = monotonic()
+    if not radio.sound.playing:
+        if radio.playable and (monotonic() - last_play >= 0.5):
+            radio.play_based_on_mode()
+    elif radio.sound.playing:
+        last_play = monotonic()
 
-    # constant garbage collecting required if sdcardio is imported
-    # collect()
-
-    # using getattr we turn the string value from the press_events dictionary
+    # use press_events dictionary to turn the value
     # into a SoundManager module call. This removes the giant stack of
     # if/else statements, and makes it more similar to assigning a callback
     event_value = press_events.get(latest_event, "none_event")
     if event_value != "none_event":
         run_event = event_value
         # run_event = getattr(radio, event_value)
-        status.fill(mode_fill.get(radio.repeat))
         run_event()
+        status.fill(mode_fill.get(radio.repeat))
