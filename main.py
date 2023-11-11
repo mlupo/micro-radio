@@ -6,7 +6,7 @@ from storage import mount, VfsFat
 from keypad import ShiftRegisterKeys, Event
 from alarm import time, exit_and_deep_sleep_until_alarms
 from digitalio import DigitalInOut
-from os import chdir
+from os import listdir
 import badgey
 
 status = NeoPixel(D8, 1, brightness=0.75, auto_write=True)
@@ -20,7 +20,7 @@ cs = D10
 sd = SDCard(SPI(), cs)
 vfs = VfsFat(sd)
 mount(vfs, '/sd')
-chdir('/sd')
+# chdir('/sd')
 
 #  setup for PyBadge buttons
 # the Events are specified so that they can be used as keys
@@ -34,13 +34,14 @@ A_PRESS = Event(1, True)
 B_PRESS = Event(0, True)
 
 # lists holding the song file name, each item will correspond to a specific btn
-track_bank = [["trim.wav", "candle_snow.wav",
-              "snowy_blanket.wav", "grinch.wav"],  # up
-              ["daydream.wav", "moonshadow.wav", "either.wav"],  # down
-              ["more_moles.wav","spider_j.wav", "rocks_and_flowers.wav", "old_cookie.wav",],
-              # "jelly_fish.wav"],  # left
-              ["wheels_raffi.wav", "shake_sillies.wav", "happy_and.wav"],
-              ]  # right
+track_bank = [["/sd/up/"+x for x in listdir('/sd/up') if "._" not in x],  # up
+              ["/sd/down/"+x for x in listdir('/sd/down') if "._" not in x],  # down
+              ["/sd/left/"+x for x in listdir('/sd/left') if "._" not in x],  # left
+              ["/sd/right/"+x for x in listdir('/sd/right') if "._" not in x],
+              ] 
+
+for i in track_bank:
+    i.sort()
 
 # enable the speaker and initialize the SoundManager
 speakerEnable = DigitalInOut(SPEAKER_ENABLE)
@@ -76,7 +77,7 @@ while True:
         exit_and_deep_sleep_until_alarms(wake)
 
     if not radio.sound.playing:
-        if radio.playable and (monotonic() - last_play >= 0.5):
+        if radio.playable and (monotonic() - last_play >= 0.2):
             radio.play_based_on_mode()
     elif radio.sound.playing:
         last_play = monotonic()

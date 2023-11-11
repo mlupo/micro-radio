@@ -45,8 +45,8 @@ class SoundManager:
         self.speaker.switch_to_output(value=True)
         self.current_song = self.internal_track_banks[event_bank][0]
         self.sound.play(self.current_song)
-        rotated_track = self.internal_track_banks[event_bank].pop(-1)
-        self.internal_track_banks[event_bank].insert(0, rotated_track)
+        rotated_track = self.internal_track_banks[event_bank].pop(0)
+        self.internal_track_banks[event_bank].append(rotated_track)
         self.current_bank = event_bank
 
     def play_based_on_mode(self):
